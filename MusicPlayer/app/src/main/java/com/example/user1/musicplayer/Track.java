@@ -1,5 +1,6 @@
 package com.example.user1.musicplayer;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.media.MediaMetadataRetriever;
 
@@ -13,12 +14,14 @@ public class Track {
     private String artist;
     private String album;
     private String duration;
+    private int ID;
 
-    public Track(String resourceName){
+
+    public Track(String resourceName, Context context){
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
         try {
-            mmr.setDataSource("C:\\Users\\USER1\\Documents\\GitHub\\Music-Player\\" +
-                    "MusicPlayer\\app\\src\\main\\res\\raw\\" + resourceName + ".mp3");
+            mmr.setDataSource("C:\\Users\\USER1\\Documents\\GitHub\\Music-Player\\MusicPlayer\\app\\src\\main\\res\\raw\\"
+                    + resourceName + ".mp3");
         }
         catch(IllegalArgumentException ex){ex.printStackTrace();}
 
@@ -38,6 +41,8 @@ public class Track {
             album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
         else
             album = "<Unknown";
+
+        ID = context.getResources().getIdentifier(resourceName, "raw", "com.example.user1.musicplayer");
     }
 
     public Track(){
@@ -60,12 +65,21 @@ public class Track {
 
     //Getters & setters
 
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getDurationInSecs() {
+        return durationInSecs;
+    }
+
+    public void setDurationInSecs(int durationInSecs) {
+        this.durationInSecs = durationInSecs;
     }
 
     public String getArtist() {
@@ -90,5 +104,13 @@ public class Track {
 
     public void setDuration(String duration) {
         this.duration = duration;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
     }
 }

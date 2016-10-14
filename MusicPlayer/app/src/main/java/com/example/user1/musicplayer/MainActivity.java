@@ -9,9 +9,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         rawResourcesNames = getRawResourcesNames();
         for (int i = 0; i<rawResourcesNames.size(); i++){
-            tracks.add(new Track(rawResourcesNames.get(i)));
+            tracks.add(new Track(rawResourcesNames.get(i), this));
         }
         /*for(int i = 0; i < 3; i++)
             tracks.add(new Track());*/
@@ -59,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.bohemian_rhapsody);
-                mediaPlayer.start();
+                /*int audioSessionId = mediaPlayer.;
+                mediaPlayer = mediaPlayer.create(getApplicationContext(),audioSessionId);*/
             }
         });
 
@@ -70,6 +72,25 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(mediaPlayer.isPlaying())
                     mediaPlayer.pause();
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if(mediaPlayer.isPlaying())
+                    mediaPlayer.pause();
+
+                Track track = adapter.getItem(position);
+                final int resourceId = getApplicationContext().getResources().getIdentifier(track.getName(), "raw", "com.example.user1.musicplayer");
+                try {
+                    mediaPlayer = MediaPlayer.create(getApplicationContext(), resourceId);
+                    mediaPlayer.start();
+                }
+                catch (Exception ex){
+                    ex.printStackTrace();
+                    Toast.makeText(getApplicationContext(),"An exception has been thrown", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -100,11 +121,10 @@ public class MainActivity extends AppCompatActivity {
                 //the name of the current resource
                 resourceName = fields[i].getName();
 
-                Uri uri = Uri.parse("android.resource://com.example.user1.musicplayer/raw/"+resourceName);
-
-                //if(uri.getPath().endsWith(".mp3"))
-                //the loop adds each name of each of the resources of raw to an ArrayList
-                rawResourcesNames.add(resourceName);
+                //if the id of the resource isn't 0 (if it is it brings up problems)
+                if(getApplicationContext().getResources().getIdentifier(resourceName, "raw", "com.example.user1.musicplayer")!=0)
+                    //the loop adds each name of each of the resources of raw to an ArrayList
+                    rawResourcesNames.add(resourceName);
                 }
 
             catch (Exception e) {
