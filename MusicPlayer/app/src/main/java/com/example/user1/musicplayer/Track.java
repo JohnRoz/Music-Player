@@ -3,6 +3,9 @@ package com.example.user1.musicplayer;
 import android.content.Context;
 import android.content.res.Resources;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
+
+import java.io.File;
 
 /**
  * Created by USER1 on 14/10/2016.
@@ -10,55 +13,78 @@ import android.media.MediaMetadataRetriever;
 
 public class Track {
     private String name;
-    private int durationInSecs;
     private String artist;
     private String album;
-    private String duration;
+    private int duration;
     private int ID;
+
+    String durationInMilliseconds;
+    String trackTitle;
 
 
     public Track(String resourceName, Context context){
+
+        //An object to get the data that's 'deep inside' the mp3 file
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+
+        //a Uri object to contain the path to the current file.
+        //the Uri is used to give the MediaMetadataRetriever the path to the file i want to use it's data.
+        Uri path = Uri.parse("android.resource://com.example.user1.musicplayer/raw/"+resourceName);
+
         try {
-            mmr.setDataSource("C:\\Users\\USER1\\Documents\\GitHub\\Music-Player\\MusicPlayer\\app\\src\\main\\res\\raw\\"
-                    + resourceName + ".mp3");
-        }
+            //telling the MediaMetadataRetriever where to take the data from, using context & the Uri
+            //Might throw IllegalArgumentException
+            mmr.setDataSource(context, path);}
         catch(IllegalArgumentException ex){ex.printStackTrace();}
 
+        //Setting the name of the Track
         name = resourceName;
+        trackTitle = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
 
-        if(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!=null)
-            duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        else
-            duration = "<Unknown>";
 
+        //Setting the duration time of the Track
+        if(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!=null) {
+            //string of the duration time of the track in milliseconds
+            durationInMilliseconds = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+            //integer of the duration time of the track in SECONDS
+            duration = (Integer.parseInt(durationInMilliseconds)/1000);
+
+        }
+
+        //Setting the artist of the Track
         if(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST) != null)
             artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST);
         else
             artist = "<Unknown>";
 
+        //Setting the album of the Track
         if(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM) != null)
             album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
         else
-            album = "<Unknown";
+            album = "<Unknown>";
 
+        //Setting the ID of the current resource file
         ID = context.getResources().getIdentifier(resourceName, "raw", "com.example.user1.musicplayer");
     }
 
-    public Track(){
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        try{mmr.setDataSource("C:\\Users\\USER1\\Documents\\GitHub\\Music-Player\\MusicPlayer\\app\\src\\main\\res\\raw\\antonio_vivaldi_winter.mp3");}
-        catch(IllegalArgumentException ex){ex.printStackTrace();}
-
-        name = "antonio_vivaldi_winter";
-        duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-        album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
-    }
 
     @Override
     public String toString(){
-        return name + "      "+ duration + "\n" + artist + " - " + album;
+        //if the duration time of the track's info is found in the mp3 file.
+        // (if the METADATA_KEY_DURATION returns something that isn't null).
+        //  meaning that the var 'duration' holds the length of the track in SECONDS.
+        //This will show the duration time in a [MINUTES:SECONDS] format.
+        if(durationInMilliseconds != null) {
+
+            //if the METADATA_KEY_TITLE returns something that isn't null
+            if (trackTitle != null)
+                return trackTitle + "      " + duration / 60/*MINUTES*/ + ":" + duration % 60/*SECONDS*/ + "\n" + artist + " - " + album;
+
+            //if it returns Null, just use the name of the resource as it is
+            return name + "      " + duration / 60/*MINUTES*/ + ":" + duration % 60/*SECONDS*/ + "\n" + artist + " - " + album;
+        }
+        return name + "      "+ "<Unknown>" + "\n" + artist + " - " + album;
     }
 
 
@@ -75,11 +101,11 @@ public class Track {
     }
 
     public int getDurationInSecs() {
-        return durationInSecs;
+        return duration;
     }
 
     public void setDurationInSecs(int durationInSecs) {
-        this.durationInSecs = durationInSecs;
+        this.duration = durationInSecs;
     }
 
     public String getArtist() {
@@ -96,14 +122,6 @@ public class Track {
 
     public void setAlbum(String album) {
         this.album = album;
-    }
-
-    public String getDuration() {
-        return duration;
-    }
-
-    public void setDuration(String duration) {
-        this.duration = duration;
     }
 
     public int getID() {

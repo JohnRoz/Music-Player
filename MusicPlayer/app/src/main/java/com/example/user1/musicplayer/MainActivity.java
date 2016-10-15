@@ -83,24 +83,11 @@ public class MainActivity extends AppCompatActivity {
 
                 Track track = adapter.getItem(position);
                 final int resourceId = getApplicationContext().getResources().getIdentifier(track.getName(), "raw", "com.example.user1.musicplayer");
-                try {
-                    mediaPlayer = MediaPlayer.create(getApplicationContext(), resourceId);
-                    mediaPlayer.start();
-                }
-                catch (Exception ex){
-                    ex.printStackTrace();
-                    Toast.makeText(getApplicationContext(),"An exception has been thrown", Toast.LENGTH_SHORT).show();
-                }
+
+                mediaPlayer = MediaPlayer.create(getApplicationContext(), resourceId);
+                mediaPlayer.start();
             }
         });
-
-
-
-        /*MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource("res\\raw\\bohemian_rhapsody.mp3");
-
-        String albumName = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));*/
-
 
     }
 
