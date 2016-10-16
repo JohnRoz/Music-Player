@@ -1,11 +1,9 @@
 package com.example.user1.musicplayer;
 
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,15 +44,12 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i<rawResourcesNames.size(); i++){
             tracks.add(new Track(rawResourcesNames.get(i), this));
         }
-        /*for(int i = 0; i < 3; i++)
-            tracks.add(new Track());*/
 
         listView = (ListView) findViewById(R.id.listView);
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, tracks);
 
         listView.setAdapter(adapter);
-
 
 
         playPause = (Button) findViewById(R.id.playPause);
