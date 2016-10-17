@@ -6,20 +6,21 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 
 import java.io.File;
+import java.io.Serializable;
 
 /**
  * Created by USER1 on 14/10/2016.
  */
 
-public class Track {
+public class Track implements Serializable {
     private String name;
     private String artist;
     private String album;
     private int duration;
     private int ID;
 
-    String durationInMilliseconds;
-    String trackTitle;
+    private String durationInMilliseconds;
+    private String trackTitle;
 
 
     public Track(String resourceName, Context context){

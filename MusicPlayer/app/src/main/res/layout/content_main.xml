@@ -42,8 +42,8 @@
     <Button
         android:layout_width="49dp"
         android:layout_height="49dp"
-        android:background="@drawable/ic_pause_black_24dp"
-        android:id="@+id/pause"/>
+        android:background="@drawable/ic_stop_black_24dp"
+        android:id="@+id/stop"/>
 
     <SeekBar
         android:layout_width="match_parent"

@@ -1,6 +1,7 @@
 package com.example.user1.musicplayer;
 
-import android.media.MediaPlayer;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -11,16 +12,14 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     Button playPause;
-    Button pause;
+    Button stop;
     Button skipNext;
     Button skipPrev;
     ListView listView;
@@ -30,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayAdapter<Track> adapter;
 
-    MediaPlayer mediaPlayer = new MediaPlayer();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,35 +51,57 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
 
 
+        //When pressing the Play/Pause button:
         playPause = (Button) findViewById(R.id.playPause);
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*int audioSessionId = mediaPlayer.;
-                mediaPlayer = mediaPlayer.create(getApplicationContext(),audioSessionId);*/
+
             }
         });
 
-        pause = (Button) findViewById(R.id.pause);
-        pause.setOnClickListener(new View.OnClickListener() {
+
+        //When pressing the 'Stop' button:
+        stop = (Button) findViewById(R.id.stop);
+        stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mediaPlayer.isPlaying())
-                    mediaPlayer.pause();
+                /**Creates a new Intent without any extras, in order to let the activity know
+                *the destination of the Intent*/
+                final Intent intent = new Intent(MainActivity.this, BackgroundMusicService.class);
+
+                //Starting the service with an Intent with no extras in order to tell the service to stop the music.
+                new AsyncTask<Intent,Void,Void>(){
+                    @Override
+                    protected Void doInBackground(Intent... params) {
+                        startService(intent);
+                        return null;
+                    }
+                }.execute();
             }
         });
 
+        //When an item from the ListView is pressed:
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(mediaPlayer.isPlaying())
-                    mediaPlayer.pause();
 
+                //The Track that was pressed
                 Track track = adapter.getItem(position);
-                final int resourceId = getApplicationContext().getResources().getIdentifier(track.getName(), "raw", "com.example.user1.musicplayer");
 
-                mediaPlayer = MediaPlayer.create(getApplicationContext(), resourceId);
-                mediaPlayer.start();
+                //A new Intent containing the pressed Track as an extra.
+                final Intent intent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                intent.putExtra("track", track);
+
+                //Starting the service with an Intent the Track as an extra in order to tell the service to play the Track.
+                new AsyncTask<Intent,Void,Void>(){
+                    @Override
+                    protected Void doInBackground(Intent... params) {
+                        startService(intent);
+                        return null;
+                    }
+                }.execute();
+
             }
         });
 
