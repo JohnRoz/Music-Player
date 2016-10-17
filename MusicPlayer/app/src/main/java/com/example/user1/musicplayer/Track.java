@@ -23,6 +23,9 @@ public class Track implements Serializable {
     private String trackTitle;
 
 
+    private String tracksMinutes;//number of minutes in the Track's length.
+    private String tracksSeconds;//number of seconds in the Track's length.
+
     public Track(String resourceName, Context context){
 
         //An object to get the data that's 'deep inside' the mp3 file
@@ -51,13 +54,28 @@ public class Track implements Serializable {
             //integer of the duration time of the track in SECONDS
             duration = (Integer.parseInt(durationInMilliseconds)/1000);
 
+            //number of minutes in the Track's length.
+            tracksMinutes = duration/60+"";
+
+            //if the number of seconds in the Track's length is a one digit number,
+            if((duration%60)/10==0)
+                //then set it as "0[the number]".
+                tracksSeconds = "0"+duration%60;
+            else
+                tracksSeconds = duration%60+"";
+
         }
 
         //Setting the artist of the Track
-        if(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST) != null)
-            artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST);
+        if(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) != null)
+            artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         else
             artist = "<Unknown>";
+
+        //if the artist's name(s) is equal to or longer than 25 characters,
+        // just show the first 25 characters, and add "..."in the end
+        if(artist.length()>=25)
+            artist=artist.substring(0,25) + "...";
 
         //Setting the album of the Track
         if(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM) != null)
@@ -80,10 +98,10 @@ public class Track implements Serializable {
 
             //if the METADATA_KEY_TITLE returns something that isn't null
             if (trackTitle != null)
-                return trackTitle + "      " + duration / 60/*MINUTES*/ + ":" + duration % 60/*SECONDS*/ + "\n" + artist + " - " + album;
+                return trackTitle + "      " + tracksMinutes + ":" + tracksSeconds + "\n" + artist + " - " + album;
 
             //if it returns Null, just use the name of the resource as it is
-            return name + "      " + duration / 60/*MINUTES*/ + ":" + duration % 60/*SECONDS*/ + "\n" + artist + " - " + album;
+            return name + "      " + tracksMinutes + ":" + tracksSeconds + "\n" + artist + " - " + album;
         }
         return name + "      "+ "<Unknown>" + "\n" + artist + " - " + album;
     }
