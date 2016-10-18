@@ -30,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<Track> adapter;
 
 
+    //The Intent that will be sent to the Service
+    Intent serviceIntent;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,18 +70,12 @@ public class MainActivity extends AppCompatActivity {
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /**Creates a new Intent without any extras, in order to let the activity know
-                *the destination of the Intent*/
-                final Intent intent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                //If the intent to be sent to the Service, 'serviceIntent', is null, define it.
+                if(serviceIntent == null)
+                    serviceIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
 
-                //Starting the service with an Intent with no extras in order to tell the service to stop the music.
-                new AsyncTask<Intent,Void,Void>(){
-                    @Override
-                    protected Void doInBackground(Intent... params) {
-                        startService(intent);
-                        return null;
-                    }
-                }.execute();
+                //Stop the Service 'serviceIntent' is linked to.
+                stopService(serviceIntent);
             }
         });
 
@@ -89,15 +87,16 @@ public class MainActivity extends AppCompatActivity {
                 //The Track that was pressed
                 Track track = adapter.getItem(position);
 
-                //A new Intent containing the pressed Track as an extra.
-                final Intent intent = new Intent(MainActivity.this, BackgroundMusicService.class);
-                intent.putExtra("track", track);
+                //Define 'serviceIntent' as a new Intent containing the pressed Track as an extra.
+                serviceIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                serviceIntent.putExtra("track", track);
 
-                //Starting the service with an Intent the Track as an extra in order to tell the service to play the Track.
+                //Starting the service with 'serviceIntent' in order to tell the service to play the Track.
                 new AsyncTask<Intent,Void,Void>(){
                     @Override
                     protected Void doInBackground(Intent... params) {
-                        startService(intent);
+
+                        startService(serviceIntent);
                         return null;
                     }
                 }.execute();
