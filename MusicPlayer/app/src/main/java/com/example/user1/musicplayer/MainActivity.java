@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> rawResourcesNames;
     ArrayList<Track> tracks;
+    ArrayList<Track> tracksList;
 
     ArrayAdapter<Track> adapter;
 
@@ -84,14 +85,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                //The Track that was pressed
-                Track track = adapter.getItem(position);
+                //A list of tracks containing all the tracks in the 'tracks' ArrayList, from the current position till the end.
+                tracksList = new ArrayList<>();
+                for(int i = position; i < tracks.size(); i++)
+                    tracksList.add(tracks.get(i));
 
-                //Define 'serviceIntent' as a new Intent containing the pressed Track as an extra.
+                //Define 'serviceIntent' as a new Intent containing the list of all
+                //Tracks from the current position till the end as an extra.
                 serviceIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
-                serviceIntent.putExtra("track", track);
+                serviceIntent.putExtra("tracksList", tracksList);
 
-                //Starting the service with 'serviceIntent' in order to tell the service to play the Track.
+                //Starting the service with 'serviceIntent' in order to tell the service to play the Tracks in the tracksList.
                 new AsyncTask<Intent,Void,Void>(){
                     @Override
                     protected Void doInBackground(Intent... params) {
@@ -100,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
                         return null;
                     }
                 }.execute();
-
             }
         });
 
