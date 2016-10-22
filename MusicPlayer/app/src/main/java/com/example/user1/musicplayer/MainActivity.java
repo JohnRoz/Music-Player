@@ -61,7 +61,18 @@ public class MainActivity extends AppCompatActivity {
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                final Intent nullIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
 
+                //TODO: make the image change every time after being pressed
+
+                new AsyncTask<Intent,Void,Void>(){
+                    @Override
+                    protected Void doInBackground(Intent... params) {
+
+                        startService(nullIntent);
+                        return null;
+                    }
+                }.execute();
             }
         });
 
@@ -84,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
 
                 //A list of tracks containing all the tracks in the 'tracks' ArrayList, from the current position till the end.
                 tracksList = new ArrayList<>();
