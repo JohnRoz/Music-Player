@@ -43,7 +43,7 @@ public class BackgroundMusicService extends Service {
         mediaPlayer.start();
 
 
-
+        
         //I have no idea what this const is.
         return START_NOT_STICKY;
     }

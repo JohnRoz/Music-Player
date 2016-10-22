@@ -12,7 +12,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.user1.musicplayer.MainActivity"
     tools:showIn="@layout/activity_main"
-    android:background="#FFdCa3">
+    android:background="#EFECD3">
 <!-- android:background="#007080" -->
 
     <Button
