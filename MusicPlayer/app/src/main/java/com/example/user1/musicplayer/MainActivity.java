@@ -11,6 +11,8 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 import java.lang.reflect.Field;
@@ -18,7 +20,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button playPause;
+    ImageButton playPause;
     Button stop;
     Button skipNext;
     Button skipPrev;
@@ -57,13 +59,22 @@ public class MainActivity extends AppCompatActivity {
 
 
         //When pressing the Play/Pause button:
-        playPause = (Button) findViewById(R.id.playPause);
+        playPause = (ImageButton) findViewById(R.id.playPause);
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final Intent nullIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
 
                 //TODO: make the image change every time after being pressed
+                if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_pause_black_24dp) {
+                    playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                    playPause.setTag(R.drawable.ic_play_arrow_black_24dp);
+                }
+                else if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
+                    playPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                    playPause.setTag(R.drawable.ic_pause_black_24dp);
+                }
+
 
                 new AsyncTask<Intent,Void,Void>(){
                     @Override
@@ -95,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                playPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                playPause.setTag(R.drawable.ic_pause_black_24dp);
 
 
                 //A list of tracks containing all the tracks in the 'tracks' ArrayList, from the current position till the end.
@@ -154,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
         //The list of names of the resources of the raw class is being returned
         return rawResourcesNames;
     }
+
 
 
     @Override
