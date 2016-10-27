@@ -33,9 +33,6 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<Track> adapter;
 
 
-    //The Intent that will be sent to the Service
-    Intent serviceIntent;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,27 +60,26 @@ public class MainActivity extends AppCompatActivity {
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Intent nullIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                final Intent intent = new Intent(MainActivity.this, BackgroundMusicService.class);
 
                 //TODO: make the image change every time after being pressed
+                //pause
                 if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_pause_black_24dp) {
                     playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                     playPause.setTag(R.drawable.ic_play_arrow_black_24dp);
+                    intent.setAction("ACTION_PAUSE");
                 }
+
+                //resume
                 else if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
                     playPause.setImageResource(R.drawable.ic_pause_black_24dp);
                     playPause.setTag(R.drawable.ic_pause_black_24dp);
+                    intent.setAction("ACTION_RESUME");
                 }
 
+                startService(intent);
 
-                new AsyncTask<Intent,Void,Void>(){
-                    @Override
-                    protected Void doInBackground(Intent... params) {
 
-                        startService(nullIntent);
-                        return null;
-                    }
-                }.execute();
             }
         });
 
@@ -93,12 +89,10 @@ public class MainActivity extends AppCompatActivity {
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //If the intent to be sent to the Service, 'serviceIntent', is null, define it.
-                if(serviceIntent == null)
-                    serviceIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                Intent stopIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
 
-                //Stop the Service 'serviceIntent' is linked to.
-                stopService(serviceIntent);
+                //Stop the Service.
+                stopService(stopIntent);
             }
         });
 
@@ -118,18 +112,15 @@ public class MainActivity extends AppCompatActivity {
 
                 //Define 'serviceIntent' as a new Intent containing the list of all
                 //Tracks from the current position till the end as an extra.
-                serviceIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
-                serviceIntent.putExtra("tracksList", tracksList);
+
+
+                Intent playTrackIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                playTrackIntent.putExtra("tracksList", tracksList);
+                playTrackIntent.setAction("ACTION_PLAY_TRACK");
 
                 //Starting the service with 'serviceIntent' in order to tell the service to play the Tracks in the tracksList.
-                new AsyncTask<Intent,Void,Void>(){
-                    @Override
-                    protected Void doInBackground(Intent... params) {
+                startService(playTrackIntent);
 
-                        startService(serviceIntent);
-                        return null;
-                    }
-                }.execute();
             }
         });
 

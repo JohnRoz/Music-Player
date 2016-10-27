@@ -20,6 +20,9 @@ import java.util.ArrayList;
 public class BackgroundMusicService extends Service {
 
     MediaPlayer mediaPlayer;
+    public final String ACTION_PAUSE = "ACTION_PAUSE";
+    public final String ACTION_RESUME = "ACTION_RESUME";
+    public final String ACTION_PLAY_TRACK = "ACTION_PLAY_TRACK";
 
     @Override
     public void onCreate() {
@@ -35,53 +38,62 @@ public class BackgroundMusicService extends Service {
         //A duplicate of the tracksList sent through the Intent.
         // (Serializable creates a clone of the object that was sent on the other side of the Intent)
         final ArrayList<Track> tracksList = (ArrayList<Track>) intent.getSerializableExtra("tracksList");
-
         if(tracksList != null) {
 
-            //If the music is playing right now - stop, in order to play another track.
-            if (mediaPlayer.isPlaying())
-                mediaPlayer.stop();
+            String action = intent.getAction();
+            if(action.equals(ACTION_PLAY_TRACK)){
+                //If the music is playing right now - stop, in order to play another track.
+                if (mediaPlayer.isPlaying())
+                    mediaPlayer.stop();
 
 
-            //The ID of the resource the first track in the tracksList contains
-            final int resId = tracksList.get(0).getID();
+                //The ID of the resource the first track in the tracksList contains
+                final int resId = tracksList.get(0).getID();
 
-            //Starting a new Track.
-            mediaPlayer = MediaPlayer.create(getApplicationContext(), resId);
-            mediaPlayer.start();
-
-
-            //When the current track playing ends - play the next Track if it exists. If it doesn't, do nothing.
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    tracksList.remove(0);
-                    if (!tracksList.isEmpty() && tracksList.size() > 0) {
-                        mp.reset();
-                        Uri path = Uri.parse("android.resource://com.example.user1.musicplayer/raw/" + tracksList.get(0).getName());
-                        try {
-                            mp.setDataSource(getApplicationContext(), path);
-                            mp.prepare();
-                            mp.start();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-
-                }
-            });
-        }
-        else{
-            if(mediaPlayer.isPlaying())
-                mediaPlayer.pause();
-            else
+                //Starting a new Track.
+                mediaPlayer = MediaPlayer.create(getApplicationContext(), resId);
                 mediaPlayer.start();
+
+
+                //When the current track playing ends - play the next Track if it exists. If it doesn't, do nothing.
+                whenTheTrackEndsPlayNext(tracksList);
+            }
+
+            else if(action.equals(ACTION_PAUSE)){
+                if(mediaPlayer.isPlaying())
+                    mediaPlayer.pause();
+            }
+
+            else if(action.equals(ACTION_RESUME))
+                mediaPlayer.start();
+
         }
 
 
             //I have no idea what this const is.
             return START_NOT_STICKY;
 
+    }
+
+    private void whenTheTrackEndsPlayNext(final ArrayList<Track> tracksList) {
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                tracksList.remove(0);
+                if (!tracksList.isEmpty() && tracksList.size() > 0) {
+                    mp.reset();
+                    Uri path = Uri.parse("android.resource://com.example.user1.musicplayer/raw/" + tracksList.get(0).getName());
+                    try {
+                        mp.setDataSource(getApplicationContext(), path);
+                        mp.prepare();
+                        mp.start();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+            }
+        });
     }
 
 
@@ -92,6 +104,7 @@ public class BackgroundMusicService extends Service {
             mediaPlayer.stop();
 
         mediaPlayer.release();
+        mediaPlayer = null;
 
         super.onDestroy();
     }
