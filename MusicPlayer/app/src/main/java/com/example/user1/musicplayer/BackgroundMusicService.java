@@ -38,36 +38,42 @@ public class BackgroundMusicService extends Service {
         //A duplicate of the tracksList sent through the Intent.
         // (Serializable creates a clone of the object that was sent on the other side of the Intent)
         final ArrayList<Track> tracksList = (ArrayList<Track>) intent.getSerializableExtra("tracksList");
-        if(tracksList != null) {
+
 
             String action = intent.getAction();
-            if(action.equals(ACTION_PLAY_TRACK)){
-                //If the music is playing right now - stop, in order to play another track.
+
+        switch (action) {
+            //If the action is 'ACTION_PLAY_TRACK' - i told the app to play a track.
+            case ACTION_PLAY_TRACK:
+                if (tracksList != null) {
+                    //If the music is playing right now - stop, in order to play another track.
+                    if (mediaPlayer.isPlaying())
+                        mediaPlayer.stop();
+
+
+                    //The ID of the resource the first track in the tracksList contains
+                    final int resId = tracksList.get(0).getID();
+
+                    //Starting a new Track.
+                    mediaPlayer = MediaPlayer.create(getApplicationContext(), resId);
+                    mediaPlayer.start();
+
+
+                    //When the current track playing ends - play the next Track if it exists. If it doesn't, do nothing.
+                    whenTheTrackEndsPlayNext(tracksList);
+                }
+                break;
+            //If the action is 'ACTION_PAUSE' - i told the app to pause the track.
+            case ACTION_PAUSE:
                 if (mediaPlayer.isPlaying())
-                    mediaPlayer.stop();
-
-
-                //The ID of the resource the first track in the tracksList contains
-                final int resId = tracksList.get(0).getID();
-
-                //Starting a new Track.
-                mediaPlayer = MediaPlayer.create(getApplicationContext(), resId);
-                mediaPlayer.start();
-
-
-                //When the current track playing ends - play the next Track if it exists. If it doesn't, do nothing.
-                whenTheTrackEndsPlayNext(tracksList);
-            }
-
-            else if(action.equals(ACTION_PAUSE)){
-                if(mediaPlayer.isPlaying())
                     mediaPlayer.pause();
-            }
-
-            else if(action.equals(ACTION_RESUME))
+                break;
+            //If the action is 'ACTION_RESUME' - i told the app to resume the track from where it paused.
+            case ACTION_RESUME:
                 mediaPlayer.start();
-
+                break;
         }
+
 
 
             //I have no idea what this const is.

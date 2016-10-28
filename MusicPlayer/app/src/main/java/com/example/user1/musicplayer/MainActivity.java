@@ -93,6 +93,14 @@ public class MainActivity extends AppCompatActivity {
 
                 //Stop the Service.
                 stopService(stopIntent);
+
+                //switch the pause button to 'play'
+                if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_pause_black_24dp) {
+                    playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                    playPause.setTag(R.drawable.ic_play_arrow_black_24dp);
+                }
+
+
             }
         });
 
