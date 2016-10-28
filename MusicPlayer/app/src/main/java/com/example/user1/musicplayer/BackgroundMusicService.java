@@ -23,6 +23,7 @@ public class BackgroundMusicService extends Service {
     public final String ACTION_PAUSE = "ACTION_PAUSE";
     public final String ACTION_RESUME = "ACTION_RESUME";
     public final String ACTION_PLAY_TRACK = "ACTION_PLAY_TRACK";
+    public final String ACTION_SKIP_NEXT = "ACTION_SKIP_NEXT";
 
     @Override
     public void onCreate() {
@@ -45,23 +46,7 @@ public class BackgroundMusicService extends Service {
         switch (action) {
             //If the action is 'ACTION_PLAY_TRACK' - i told the app to play a track.
             case ACTION_PLAY_TRACK:
-                if (tracksList != null) {
-                    //If the music is playing right now - stop, in order to play another track.
-                    if (mediaPlayer.isPlaying())
-                        mediaPlayer.stop();
-
-
-                    //The ID of the resource the first track in the tracksList contains
-                    final int resId = tracksList.get(0).getID();
-
-                    //Starting a new Track.
-                    mediaPlayer = MediaPlayer.create(getApplicationContext(), resId);
-                    mediaPlayer.start();
-
-
-                    //When the current track playing ends - play the next Track if it exists. If it doesn't, do nothing.
-                    whenTheTrackEndsPlayNext(tracksList);
-                }
+                playTrack(tracksList);
                 break;
             //If the action is 'ACTION_PAUSE' - i told the app to pause the track.
             case ACTION_PAUSE:
@@ -72,6 +57,10 @@ public class BackgroundMusicService extends Service {
             case ACTION_RESUME:
                 mediaPlayer.start();
                 break;
+            //If the action is 'ACTION_SKIP_NEXT' - i removed the first track in the tracksList and told the service to play the track
+            case ACTION_SKIP_NEXT:
+                playTrack(tracksList);
+                break;
         }
 
 
@@ -79,6 +68,28 @@ public class BackgroundMusicService extends Service {
             //I have no idea what this const is.
             return START_NOT_STICKY;
 
+    }
+
+    private void playTrack(ArrayList<Track> tracksList) {
+        if (!tracksList.isEmpty() && tracksList.size() > 0) {
+            //If the music is playing right now - stop, in order to play another track.
+            if (mediaPlayer.isPlaying())
+                mediaPlayer.stop();
+
+
+            //The ID of the resource the first track in the tracksList contains
+            final int resId = tracksList.get(0).getID();
+
+            //Starting a new Track.
+            mediaPlayer = MediaPlayer.create(getApplicationContext(), resId);
+            mediaPlayer.start();
+
+
+            //When the current track playing ends - play the next Track if it exists. If it doesn't, do nothing.
+            whenTheTrackEndsPlayNext(tracksList);
+        }
+        else
+            stopSelf();
     }
 
     private void whenTheTrackEndsPlayNext(final ArrayList<Track> tracksList) {

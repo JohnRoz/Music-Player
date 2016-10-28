@@ -60,26 +60,55 @@ public class MainActivity extends AppCompatActivity {
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Intent intent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                final Intent playPauseIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
 
-                //TODO: make the image change every time after being pressed
-                //pause
+                //changing the playPause button from 'Pause Mode' to 'Play Mode'
+                //Telling the service to PAUSE PLAYING
                 if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_pause_black_24dp) {
                     playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                     playPause.setTag(R.drawable.ic_play_arrow_black_24dp);
-                    intent.setAction("ACTION_PAUSE");
+                    playPauseIntent.setAction("ACTION_PAUSE");
                 }
 
-                //resume
+                //changing the playPause button from 'Play Mode' to 'Pause Mode'
+                //Telling the service to RESUME PLAYING
                 else if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
                     playPause.setImageResource(R.drawable.ic_pause_black_24dp);
                     playPause.setTag(R.drawable.ic_pause_black_24dp);
-                    intent.setAction("ACTION_RESUME");
+                    playPauseIntent.setAction("ACTION_RESUME");
                 }
 
-                startService(intent);
+                startService(playPauseIntent);
 
 
+            }
+        });
+
+        //When pressing the Skip Next button
+        skipNext = (Button) findViewById(R.id.skipNext);
+        skipNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (tracksList != null && !tracksList.isEmpty()) {
+
+                    //changing the playPause button from 'Play Mode' to 'Pause Mode'
+                    if (Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
+                        playPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                        playPause.setTag(R.drawable.ic_pause_black_24dp);
+                    }
+
+                    final Intent skipNextIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                    skipNextIntent.setAction("ACTION_SKIP_NEXT");
+
+                    //The intent needs to have the tracks list as an extra in order to set the tracksList in the service.
+                    //The service needs to have the tracksList in order to know what is the next track.
+
+                    //***im removing the first track in the traksList & tell the service to play it***
+                    tracksList.remove(0);
+                    skipNextIntent.putExtra("tracksList", tracksList);
+
+                    startService(skipNextIntent);
+                }
             }
         });
 
@@ -104,11 +133,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //***TODO: I need to change the system so the service gets the ArrayList 'tracks' & a position,
+        // TODO: and starts playing from that position onward. This is in order to allow the user to use the 'skipBack' button.
+
         //When an item from the ListView is pressed:
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
+                //changing the playPause button from 'Play Mode' to 'Pause Mode'
                 playPause.setImageResource(R.drawable.ic_pause_black_24dp);
                 playPause.setTag(R.drawable.ic_pause_black_24dp);
 
@@ -147,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
         // meaning, as the number of the resources raw class has in it
         for (int i = 0; i < fields.length; i++) {
             final String resourceName;
-            try {
                 //the name of the current resource
                 resourceName = fields[i].getName();
 
@@ -155,11 +187,6 @@ public class MainActivity extends AppCompatActivity {
                 if(getApplicationContext().getResources().getIdentifier(resourceName, "raw", "com.example.user1.musicplayer")!=0)
                     //the loop adds each name of each of the resources of raw to an ArrayList
                     rawResourcesNames.add(resourceName);
-                }
-
-            catch (Exception e) {
-                continue;
-            }
 
 
         }
