@@ -1,7 +1,7 @@
 package com.example.user1.musicplayer;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -11,7 +11,6 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
@@ -44,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
         tracks = new ArrayList<>();
 
         rawResourcesNames = getRawResourcesNames();
-        for (int i = 0; i<rawResourcesNames.size(); i++){
-            tracks.add(new Track(rawResourcesNames.get(i), this));
+        for(String name : rawResourcesNames){
+            tracks.add(new Track(name,this));
         }
 
         listView = (ListView) findViewById(R.id.listView);
@@ -54,63 +53,12 @@ public class MainActivity extends AppCompatActivity {
 
         listView.setAdapter(adapter);
 
-
         //When pressing the Play/Pause button:
-        playPause = (ImageButton) findViewById(R.id.playPause);
-        playPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final Intent playPauseIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+        initPlayPauseButton();
 
-                //changing the playPause button from 'Pause Mode' to 'Play Mode'
-                //Telling the service to PAUSE PLAYING
-                if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_pause_black_24dp) {
-                    playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-                    playPause.setTag(R.drawable.ic_play_arrow_black_24dp);
-                    playPauseIntent.setAction("ACTION_PAUSE");
-                }
-
-                //changing the playPause button from 'Play Mode' to 'Pause Mode'
-                //Telling the service to RESUME PLAYING
-                else if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
-                    playPause.setImageResource(R.drawable.ic_pause_black_24dp);
-                    playPause.setTag(R.drawable.ic_pause_black_24dp);
-                    playPauseIntent.setAction("ACTION_RESUME");
-                }
-
-                startService(playPauseIntent);
-
-
-            }
-        });
 
         //When pressing the Skip Next button
-        skipNext = (Button) findViewById(R.id.skipNext);
-        skipNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (tracksList != null && !tracksList.isEmpty()) {
-
-                    //changing the playPause button from 'Play Mode' to 'Pause Mode'
-                    if (Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
-                        playPause.setImageResource(R.drawable.ic_pause_black_24dp);
-                        playPause.setTag(R.drawable.ic_pause_black_24dp);
-                    }
-
-                    final Intent skipNextIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
-                    skipNextIntent.setAction("ACTION_SKIP_NEXT");
-
-                    //The intent needs to have the tracks list as an extra in order to set the tracksList in the service.
-                    //The service needs to have the tracksList in order to know what is the next track.
-
-                    //***im removing the first track in the traksList & tell the service to play it***
-                    tracksList.remove(0);
-                    skipNextIntent.putExtra("tracksList", tracksList);
-
-                    startService(skipNextIntent);
-                }
-            }
-        });
+        initSkipNextButton();
 
 
         //When pressing the 'Stop' button:
@@ -167,6 +115,67 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void initSkipNextButton() {
+        //When pressing the Skip Next button
+        skipNext = (Button) findViewById(R.id.skipNext);
+        skipNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (tracksList != null && !tracksList.isEmpty()) {
+
+                    //changing the playPause button from 'Play Mode' to 'Pause Mode'
+                    if (Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
+                        playPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                        playPause.setTag(R.drawable.ic_pause_black_24dp);
+                    }
+
+                    final Intent skipNextIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                    skipNextIntent.setAction("ACTION_SKIP_NEXT");
+
+                    //The intent needs to have the tracks list as an extra in order to set the tracksList in the service.
+                    //The service needs to have the tracksList in order to know what is the next track.
+
+                    //***im removing the first track in the traksList & tell the service to play it***
+                    tracksList.remove(0);
+                    skipNextIntent.putExtra("tracksList", tracksList);
+
+                    startService(skipNextIntent);
+                }
+            }
+        });
+    }
+
+    private void initPlayPauseButton() {
+        //When pressing the Play/Pause button:
+        playPause = (ImageButton) findViewById(R.id.playPause);
+        playPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Intent playPauseIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+
+                //changing the playPause button from 'Pause Mode' to 'Play Mode'
+                //Telling the service to PAUSE PLAYING
+                if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_pause_black_24dp) {
+                    playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                    playPause.setTag(R.drawable.ic_play_arrow_black_24dp);
+                    playPauseIntent.setAction("ACTION_PAUSE");
+                }
+
+                //changing the playPause button from 'Play Mode' to 'Pause Mode'
+                //Telling the service to RESUME PLAYING
+                else if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
+                    playPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                    playPause.setTag(R.drawable.ic_pause_black_24dp);
+                    playPauseIntent.setAction("ACTION_RESUME");
+                }
+
+                startService(playPauseIntent);
+
+
+            }
+        });
+    }
+
     private ArrayList<String> getRawResourcesNames() {
 
         //an ArrayList to contain the names of the resources of raw.
@@ -178,16 +187,15 @@ public class MainActivity extends AppCompatActivity {
 
         //the loop runs as the length of the 'fields' array -
         // meaning, as the number of the resources raw class has in it
-        for (int i = 0; i < fields.length; i++) {
+        for (Field field : fields) {
             final String resourceName;
-                //the name of the current resource
-                resourceName = fields[i].getName();
+            //the name of the current resource
+            resourceName = field.getName();
 
-                //if the id of the resource isn't 0 (if it is it brings up problems)
-                if(getApplicationContext().getResources().getIdentifier(resourceName, "raw", "com.example.user1.musicplayer")!=0)
-                    //the loop adds each name of each of the resources of raw to an ArrayList
-                    rawResourcesNames.add(resourceName);
-
+            //if the id of the resource isn't 0 (if it is it brings up problems)
+            if (getApplicationContext().getResources().getIdentifier(resourceName, "raw", "com.example.user1.musicplayer") != 0)
+                //the loop adds each name of each of the resources of raw to an ArrayList
+                rawResourcesNames.add(resourceName);
 
         }
 

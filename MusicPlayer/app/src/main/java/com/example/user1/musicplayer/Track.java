@@ -13,6 +13,11 @@ import java.io.Serializable;
  */
 
 public class Track implements Serializable {
+    public static final String ANDROID_RESOURCE_PATH = "android.resource://com.example.user1.musicplayer/raw/";
+    public static final String UNKNOWN_INFO = "<Unknown>";
+    public static final String PACKAGE = "com.example.user1.musicplayer";
+    public static final String RAW = "raw";
+
     private String name;
     private String artist;
     private String album;
@@ -33,7 +38,7 @@ public class Track implements Serializable {
 
         //a Uri object to contain the path to the current file.
         //the Uri is used to give the MediaMetadataRetriever the path to the file i want to use it's data.
-        Uri path = Uri.parse("android.resource://com.example.user1.musicplayer/raw/"+resourceName);
+        Uri path = Uri.parse(ANDROID_RESOURCE_PATH +resourceName);
 
         try {
             //telling the MediaMetadataRetriever where to take the data from, using context & the Uri
@@ -70,7 +75,7 @@ public class Track implements Serializable {
         if(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) != null)
             artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         else
-            artist = "<Unknown>";
+            artist = UNKNOWN_INFO;
 
         //if the artist's name(s) is equal to or longer than 25 characters,
         // just show the first 25 characters, and add "..."in the end
@@ -81,11 +86,13 @@ public class Track implements Serializable {
         if(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM) != null)
             album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
         else
-            album = "<Unknown>";
+            album = UNKNOWN_INFO;
 
         //Setting the ID of the current resource file
-        ID = context.getResources().getIdentifier(resourceName, "raw", "com.example.user1.musicplayer");
+        ID = context.getResources().getIdentifier(resourceName, RAW, PACKAGE);
     }
+
+    //TODO: create another constructor for music files from the memory
 
 
     @Override
@@ -103,7 +110,7 @@ public class Track implements Serializable {
             //if it returns Null, just use the name of the resource as it is
             return name + "      " + tracksMinutes + ":" + tracksSeconds + "\n" + artist + " - " + album;
         }
-        return name + "      "+ "<Unknown>" + "\n" + artist + " - " + album;
+        return name + "      "+ UNKNOWN_INFO + "\n" + artist + " - " + album;
     }
 
 
