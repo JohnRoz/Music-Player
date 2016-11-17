@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +30,9 @@ public class BackgroundMusicService extends Service {
     private int currentTrackPosition;
 
     public final int MILLISECS_TO_REPEAT = 1500;
+    public final int NOTIFICATION_ID=1;
+
+    RemoteViews remoteViews;
 
     @Override
     public void onCreate() {
@@ -36,13 +40,16 @@ public class BackgroundMusicService extends Service {
         //creating the MediaPlayer for the service.
         mediaPlayer = new MediaPlayer();
 
-       /* Notification notification = new Notification(R.drawable.icon, getText(R.string.ticker_text),
-        System.currentTimeMillis());
-Intent notificationIntent = new Intent(this, ExampleActivity.class);
-PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-notification.setLatestEventInfo(this, getText(R.string.notification_title),
-        getText(R.string.notification_message), pendingIntent);
-startForeground(ONGOING_NOTIFICATION_ID, notification);*/
+
+        Intent notificationIntent = new Intent(this, BackgroundMusicService.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        Notification notification = new Notification.Builder(this).setContentIntent(pendingIntent).build();
+
+        startForeground(NOTIFICATION_ID, notification);
+
+
+
     }
 
     @Override
