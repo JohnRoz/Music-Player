@@ -1,5 +1,7 @@
 package com.example.user1.musicplayer;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -26,11 +28,21 @@ public class BackgroundMusicService extends Service {
 
     private int currentTrackPosition;
 
+    public final int MILLISECS_TO_REPEAT = 1500;
+
     @Override
     public void onCreate() {
         super.onCreate();
         //creating the MediaPlayer for the service.
         mediaPlayer = new MediaPlayer();
+
+       /* Notification notification = new Notification(R.drawable.icon, getText(R.string.ticker_text),
+        System.currentTimeMillis());
+Intent notificationIntent = new Intent(this, ExampleActivity.class);
+PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+notification.setLatestEventInfo(this, getText(R.string.notification_title),
+        getText(R.string.notification_message), pendingIntent);
+startForeground(ONGOING_NOTIFICATION_ID, notification);*/
     }
 
     @Override
@@ -67,7 +79,7 @@ public class BackgroundMusicService extends Service {
 
             //If the action is 'ACTION_SKIP_PREV' - I subtracted 1 from 'currentTrackPosition' and restarted the mediaPlayer.
             case ACTION_SKIP_PREV:
-                if(mediaPlayer.getCurrentPosition()<1500)
+                if(mediaPlayer.getCurrentPosition()<MILLISECS_TO_REPEAT)
                     currentTrackPosition--;
                 skip(tracks);
         }
