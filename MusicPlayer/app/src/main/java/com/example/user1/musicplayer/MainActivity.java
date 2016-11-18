@@ -101,6 +101,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (tracks != null && !tracks.isEmpty()) {
 
+                    //If the tag of the playPause is not defined, it means no song was chosen & no song is playing at the moment
+                    //Therefore - do nothing.
+                    if(playPause.getTag()==null)
+                        return;
+
                     //changing the playPause button from 'Play Mode' to 'Pause Mode'
                     if (Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
                         playPause.setImageResource(R.drawable.ic_pause_black_24dp);
@@ -127,6 +132,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (tracks != null && !tracks.isEmpty()) {
+
+                    //If the tag of the playPause is not defined, it means no song was chosen & no song is playing at the moment
+                    //Therefore - do nothing.
+                    if(playPause.getTag()==null)
+                        return;
 
                     //changing the playPause button from 'Play Mode' to 'Pause Mode'
                     if (Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
@@ -158,11 +168,20 @@ public class MainActivity extends AppCompatActivity {
                 //Stop the Service.
                 stopService(stopIntent);
 
+                //If the tag of the playPause is not defined, it means no song was chosen & no song is playing at the moment
+                //Therefore - do nothing.
+                if(playPause.getTag()==null)
+                    return;
+
                 //switch the pause button to 'play'
                 if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_pause_black_24dp) {
                     playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-                    playPause.setTag(R.drawable.ic_play_arrow_black_24dp);
                 }
+
+                //set the Tag to be NULL
+                playPause.setTag(null);
+
+
 
 
             }
@@ -176,6 +195,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final Intent playPauseIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+
+                //If the tag of the playPause is not defined, it means no song was chosen
+                //Therefore - do nothing.
+                if(playPause.getTag()==null)
+                    return;
 
                 //changing the playPause button from 'Pause Mode' to 'Play Mode'
                 //Telling the service to PAUSE PLAYING
