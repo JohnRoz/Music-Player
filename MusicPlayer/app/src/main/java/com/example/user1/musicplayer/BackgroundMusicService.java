@@ -23,16 +23,18 @@ import java.util.ArrayList;
 public class BackgroundMusicService extends Service {
 
     MediaPlayer mediaPlayer;
-    public  final String ACTION_PAUSE = "ACTION_PAUSE";
-    public  final String ACTION_RESUME = "ACTION_RESUME";
-    public  final String ACTION_PLAY_TRACK = "ACTION_PLAY_TRACK";
-    public  final String ACTION_SKIP_NEXT = "ACTION_SKIP_NEXT";
-    public  final String ACTION_SKIP_PREV = "ACTION_SKIP_PREV";
+    public static final String ACTION_PAUSE = "ACTION_PAUSE";
+    public static final String ACTION_RESUME = "ACTION_RESUME";
+    public static final String ACTION_PLAY_TRACK = "ACTION_PLAY_TRACK";
+    public static final String ACTION_SKIP_NEXT = "ACTION_SKIP_NEXT";
+    public static final String ACTION_SKIP_PREV = "ACTION_SKIP_PREV";
+    public static final String ACTION_CHECK_IF_PLAYING="ACTION_CHECK_IF_PLAYING";
 
     private int currentTrackPosition;
 
     private final int MILLISECONDS_TO_REPEAT = 1500;
     private final int NOTIFICATION_ID=1;
+
 
 
     public static boolean isMusicPlaying;//A static boolean var to tell me if the music is playing or not right now
@@ -101,15 +103,11 @@ public class BackgroundMusicService extends Service {
             case ACTION_PAUSE:
                 if (mediaPlayer.isPlaying())
                     mediaPlayer.pause();
-                /*isMusicPlaying = mediaPlayer.isPlaying();
-                Toast.makeText(getApplicationContext(),"isMusicPlaying: " + isMusicPlaying,Toast.LENGTH_SHORT).show();*/
                 break;
 
             //If the action is 'ACTION_RESUME' - I told the app to resume the track from where it paused.
             case ACTION_RESUME:
                 mediaPlayer.start();
-                /*isMusicPlaying = mediaPlayer.isPlaying();
-                Toast.makeText(getApplicationContext(),"isMusicPlaying: " + isMusicPlaying,Toast.LENGTH_SHORT).show();*/
                 break;
 
             //If the action is 'ACTION_SKIP_NEXT' - I added 1 to 'currentTrackPosition' and restarted the mediaPlayer.
@@ -124,16 +122,34 @@ public class BackgroundMusicService extends Service {
                     currentTrackPosition--;
                 skip(tracks);
                 break;
+
+            case ACTION_CHECK_IF_PLAYING:
+                broadcastIsPlaying();
+                break;
         }
 
         //I have no idea what this const is.
         return START_NOT_STICKY;
     }
 
+    private void broadcastIsPlaying() {
+        //Intent to send the broadcast
+        Intent broadcastIsPlayingIntent = new Intent();
+
+        //Set the action of the intent to ACTION_CHECK_IF_PLAYING, so the receiver knows he should catch it
+        broadcastIsPlayingIntent.setAction(ACTION_CHECK_IF_PLAYING);
+
+        //Put the info you want to transfer inside the intent as an extra
+        broadcastIsPlayingIntent.putExtra("isPlaying", mediaPlayer.isPlaying());
+
+        //send the broadcast
+        sendBroadcast(broadcastIsPlayingIntent);
+    }
+
     //TODO: Notice that the function is ONLY for *resources*. (see line: tracks.get(currentTrackPosition).**getID()**)
     //TODO: I need to change it so it's generic for resources & FILES!
     private void playTrack(final ArrayList<Track> tracks) {
-        if (!tracks.isEmpty() && tracks.size() > 0 && currentTrackPosition >= 0 && currentTrackPosition < tracks.size()) {
+        if (tracks!=null && !tracks.isEmpty() && tracks.size() > 0 && currentTrackPosition >= 0 && currentTrackPosition < tracks.size()) {
             //If the music is playing right now - stop, in order to play another track.
             if (mediaPlayer.isPlaying())
                 mediaPlayer.stop();
@@ -144,9 +160,6 @@ public class BackgroundMusicService extends Service {
             //Starting a new Track.
             mediaPlayer = MediaPlayer.create(getApplicationContext(), resId);
             mediaPlayer.start();
-
-            /*isMusicPlaying = mediaPlayer.isPlaying();
-            Toast.makeText(getApplicationContext(),"isMusicPlaying: " + isMusicPlaying,Toast.LENGTH_SHORT).show();*/
 
             //When the current track playing ends - play the next Track if it exists. If it doesn't, do nothing.
             whenTheTrackEndsPlayNext(tracks);
@@ -178,9 +191,6 @@ public class BackgroundMusicService extends Service {
             //Set the media player a new source which is the track in the tracks list, in the currentTrackPosition.
             mediaPlayer = MediaPlayer.create(getApplicationContext(), tracks.get(currentTrackPosition).getID());
             mediaPlayer.start();
-
-            /*isMusicPlaying = mediaPlayer.isPlaying();
-            Toast.makeText(getApplicationContext(),"isMusicPlaying: " + isMusicPlaying,Toast.LENGTH_SHORT).show();*/
         }
         else
             stopSelf();

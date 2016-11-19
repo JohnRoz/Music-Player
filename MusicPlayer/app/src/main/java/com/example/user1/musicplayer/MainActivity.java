@@ -13,9 +13,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.LockSupport;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Track> tracks;
     ArrayAdapter<Track> adapter;
 
+    MyBroadcastReceiver receiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +52,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        receiver = new MyBroadcastReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BackgroundMusicService.ACTION_CHECK_IF_PLAYING);
+        registerReceiver(receiver, intentFilter);
 
 
         //Setting 'tracks' as a new, empty ArrayList.
@@ -90,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 playTrackIntent.putExtra("position",position);
                 playTrackIntent.setAction("ACTION_PLAY_TRACK");
 
-                //Starting the service with 'playTrackIntent' in order to tell the service to play the Tracks in the tracksList.
+                //Starting the service with 'playTrackIntent' in order to tell the service to play the Tracks in the current position.
                 startService(playTrackIntent);
 
             }
@@ -200,37 +211,21 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final Intent playPauseIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
 
-/* A way of knowing if the music is playing or not without using the tag of the ImageButton
+                //updating the receiver.isMusicPlaying
+                final Intent checkIfPlayingIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+                checkIfPlayingIntent.setAction(BackgroundMusicService.ACTION_CHECK_IF_PLAYING);
+                startService(checkIfPlayingIntent);
 
-                if(BackgroundMusicService.isMusicPlaying){
+                //TODO: NOTICE THAT THE CODE ENTERS THIS BLOCK *BEFORE* UPDATING 'receiver.isMusicPlaying'
+                //YOU NEED TO FIGURE OUT WHY!
+                if(receiver.isMusicPlaying){
+                    //Toast.makeText(getApplicationContext(),"ACTION_PAUSE", Toast.LENGTH_SHORT).show();
                     playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                     playPauseIntent.setAction("ACTION_PAUSE");
                 }
                 else{
+                    //Toast.makeText(getApplicationContext(),"ACTION_RESUME", Toast.LENGTH_SHORT).show();
                     playPause.setImageResource(R.drawable.ic_pause_black_24dp);
-                    playPauseIntent.setAction("ACTION_RESUME");
-                }
-*/
-
-
-                //If the tag of the playPause is not defined, it means no song was chosen
-                //Therefore - do nothing.
-                if(playPause.getTag()==null)
-                    return;
-
-                //changing the playPause button from 'Pause Mode' to 'Play Mode'
-                //Telling the service to PAUSE PLAYING
-                if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_pause_black_24dp) {
-                    playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-                    playPause.setTag(R.drawable.ic_play_arrow_black_24dp);
-                    playPauseIntent.setAction("ACTION_PAUSE");
-                }
-
-                //changing the playPause button from 'Play Mode' to 'Pause Mode'
-                //Telling the service to RESUME PLAYING
-                else if(Integer.parseInt(playPause.getTag().toString()) == R.drawable.ic_play_arrow_black_24dp){
-                    playPause.setImageResource(R.drawable.ic_pause_black_24dp);
-                    playPause.setTag(R.drawable.ic_pause_black_24dp);
                     playPauseIntent.setAction("ACTION_RESUME");
                 }
 
@@ -271,7 +266,11 @@ public class MainActivity extends AppCompatActivity {
         return rawResourcesNames;
     }
 
-
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(receiver);
+        super.onDestroy();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
