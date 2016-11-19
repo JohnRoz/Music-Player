@@ -1,6 +1,7 @@
 package com.example.user1.musicplayer;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -29,10 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> rawResourcesNames;
     ArrayList<Track> tracks;
-
     ArrayAdapter<Track> adapter;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +39,14 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);//ButterKnife is awesome!
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
 
         //Setting 'tracks' as a new, empty ArrayList.
         tracks = new ArrayList<>();
@@ -67,8 +73,6 @@ public class MainActivity extends AppCompatActivity {
 
         //When pressing an item from the ListView
         onListViewItemClick();
-
-
     }
 
     private void onListViewItemClick() {
@@ -86,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                 playTrackIntent.putExtra("position",position);
                 playTrackIntent.setAction("ACTION_PLAY_TRACK");
 
-                //Starting the service with 'serviceIntent' in order to tell the service to play the Tracks in the tracksList.
+                //Starting the service with 'playTrackIntent' in order to tell the service to play the Tracks in the tracksList.
                 startService(playTrackIntent);
 
             }
@@ -196,6 +200,19 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final Intent playPauseIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
 
+/* A way of knowing if the music is playing or not without using the tag of the ImageButton
+
+                if(BackgroundMusicService.isMusicPlaying){
+                    playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                    playPauseIntent.setAction("ACTION_PAUSE");
+                }
+                else{
+                    playPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                    playPauseIntent.setAction("ACTION_RESUME");
+                }
+*/
+
+
                 //If the tag of the playPause is not defined, it means no song was chosen
                 //Therefore - do nothing.
                 if(playPause.getTag()==null)
@@ -216,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
                     playPause.setTag(R.drawable.ic_pause_black_24dp);
                     playPauseIntent.setAction("ACTION_RESUME");
                 }
+
 
                 startService(playPauseIntent);
 
@@ -276,4 +294,5 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }

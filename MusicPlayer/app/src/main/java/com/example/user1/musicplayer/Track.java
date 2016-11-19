@@ -19,7 +19,7 @@ public class Track implements Serializable {
     private String name;
     private String artist;
     private String album;
-    private int duration;
+    private int durationInSeconds;
     private int ID;
 
     private String durationInMilliseconds;
@@ -55,17 +55,17 @@ public class Track implements Serializable {
             durationInMilliseconds = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
 
             //integer of the duration time of the track in SECONDS
-            duration = (Integer.parseInt(durationInMilliseconds)/1000);
+            durationInSeconds = (Integer.parseInt(durationInMilliseconds)/1000);
 
             //number of minutes in the Track's length.
-            tracksMinutes = duration/60+"";
+            tracksMinutes = durationInSeconds/60+"";
 
             //if the number of seconds in the Track's length is a one digit number,
-            if((duration%60)/10==0)
+            if((durationInSeconds%60)/10==0)
                 //then set it as "0[the number]".
-                tracksSeconds = "0"+duration%60;
+                tracksSeconds = "0"+durationInSeconds%60;
             else
-                tracksSeconds = duration%60+"";
+                tracksSeconds = durationInSeconds%60+"";
 
         }
 
@@ -126,11 +126,11 @@ public class Track implements Serializable {
     }
 
     public int getDurationInSecs() {
-        return duration;
+        return durationInSeconds;
     }
 
     public void setDurationInSecs(int durationInSecs) {
-        this.duration = durationInSecs;
+        this.durationInSeconds = durationInSecs;
     }
 
     public String getArtist() {
