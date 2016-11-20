@@ -32,7 +32,7 @@ public class BackgroundMusicService extends Service {
 
     private int currentTrackPosition;
 
-    private final int MILLISECONDS_TO_REPEAT = 1500;
+    private final int MILLISECONDS_TO_REPEAT = 2000;
     private final int NOTIFICATION_ID=1;
 
 

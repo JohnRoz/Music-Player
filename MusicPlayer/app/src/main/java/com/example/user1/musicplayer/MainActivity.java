@@ -1,8 +1,12 @@
 package com.example.user1.musicplayer;
 
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -32,11 +36,14 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.skipPrev)Button skipPrev;
     @BindView(R.id.listView)ListView listView;
 
-    ArrayList<String> rawResourcesNames;
-    ArrayList<Track> tracks;
-    ArrayAdapter<Track> adapter;
+    private ArrayList<String> rawResourcesNames;
+    private ArrayList<Track> tracks;
 
-    MyBroadcastReceiver receiver;
+    private ArrayAdapter<Track> adapter;
+
+    private MyBroadcastReceiver receiver;
+
+    //private ArrayList<Track> tracksFromMemory; //This is for the external music files
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +64,11 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BackgroundMusicService.ACTION_CHECK_IF_PLAYING);
         registerReceiver(receiver, intentFilter);
+
+        updateIsMusicPlaying();
+        Toast.makeText(getApplicationContext(),"onStart, is music playing: "+receiver.isMusicPlaying,Toast.LENGTH_SHORT).show();
+        if(receiver.isMusicPlaying)
+            playPause.setImageResource(R.drawable.ic_pause_black_24dp);
 
 
         //Setting 'tracks' as a new, empty ArrayList.
@@ -110,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initSkipPrevButton() {
         //When pressing the Skip Prev button
-        //skipPrev = (Button) findViewById(R.id.skipPrev);
         skipPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -142,7 +153,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initSkipNextButton() {
         //When pressing the Skip Next button
-        //skipNext = (Button) findViewById(R.id.skipNext);
         skipNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -174,7 +184,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initStopButton() {
         //When pressing the 'Stop' button
-        //stop = (Button) findViewById(R.id.stop);
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -205,26 +214,22 @@ public class MainActivity extends AppCompatActivity {
 
     private void initPlayPauseButton() {
         //When pressing the Play/Pause button:
-        //playPause = (ImageButton) findViewById(R.id.playPause);
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final Intent playPauseIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
 
-                //updating the receiver.isMusicPlaying
-                final Intent checkIfPlayingIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
-                checkIfPlayingIntent.setAction(BackgroundMusicService.ACTION_CHECK_IF_PLAYING);
-                startService(checkIfPlayingIntent);
+                updateIsMusicPlaying();
 
                 //TODO: NOTICE THAT THE CODE ENTERS THIS BLOCK *BEFORE* UPDATING 'receiver.isMusicPlaying'
                 //YOU NEED TO FIGURE OUT WHY!
                 if(receiver.isMusicPlaying){
-                    //Toast.makeText(getApplicationContext(),"ACTION_PAUSE", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"setting ACTION_PAUSE", Toast.LENGTH_SHORT).show();
                     playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                     playPauseIntent.setAction("ACTION_PAUSE");
                 }
                 else{
-                    //Toast.makeText(getApplicationContext(),"ACTION_RESUME", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"setting ACTION_RESUME", Toast.LENGTH_SHORT).show();
                     playPause.setImageResource(R.drawable.ic_pause_black_24dp);
                     playPauseIntent.setAction("ACTION_RESUME");
                 }
@@ -235,6 +240,13 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void updateIsMusicPlaying() {
+        //updating the receiver.isMusicPlaying
+        final Intent checkIfPlayingIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+        checkIfPlayingIntent.setAction(BackgroundMusicService.ACTION_CHECK_IF_PLAYING);
+        startService(checkIfPlayingIntent);
     }
 
     //The sinner function (but it's a necessary sin).
@@ -265,6 +277,26 @@ public class MainActivity extends AppCompatActivity {
         //The list of names of the resources of the raw class is being returned
         return rawResourcesNames;
     }
+/*
+    public void getTracksfromMemory(){
+
+        tracksFromMemory = new ArrayList<>();
+
+        ContentResolver contentResolver = getContentResolver();
+        Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+        Cursor songCursor = contentResolver.query(songUri, null, null, null, null);
+
+        if(songCursor != null && songCursor.moveToFirst())
+        {
+            tracksFromMemory.add(new Track(songCursor));
+             while(songCursor.moveToNext())
+                 tracksFromMemory.add(new Track(songCursor));
+
+            songCursor.close();
+        }
+    }
+    */
 
     @Override
     protected void onDestroy() {
