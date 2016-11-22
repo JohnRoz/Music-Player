@@ -106,7 +106,7 @@ public class Track implements Serializable {
 
         isResource = true;
     }
-
+    
     //TODO: create another constructor for music files from the memory
     /*public Track(Cursor songCursor){
 

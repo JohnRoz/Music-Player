@@ -2,6 +2,7 @@ package com.example.user1.musicplayer;
 
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -42,6 +43,12 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);//ButterKnife is awesome!
+
+       /* if(Intent.ACTION_VIEW.equals(getIntent().getAction())){
+            Intent receivedIntent = getIntent();
+            Uri uri = receivedIntent.getData();
+            Track track = new Track()
+        }*/
 
         //Setting the BroadcastReceiver
         registerBroadcastReceiver();
