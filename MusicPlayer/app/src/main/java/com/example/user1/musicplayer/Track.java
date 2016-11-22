@@ -14,7 +14,7 @@ import java.io.Serializable;
 
 public class Track implements Serializable {
     private static final String ANDROID_RESOURCE_PATH = "android.resource://com.example.user1.musicplayer/raw/";
-    private static final String UNKNOWN_INFO = "<Unknown>";
+    public static final String UNKNOWN_INFO = "<Unknown>";
     private static final String MY_PACKAGE = "com.example.user1.musicplayer";
     private static final String RAW = "raw";
 
@@ -27,9 +27,7 @@ public class Track implements Serializable {
     private int ID;
 
     private boolean isResource;
-
-
-
+    private String uriString;
 
 
     private String tracksMinutes;//number of minutes in the Track's length.
@@ -43,13 +41,15 @@ public class Track implements Serializable {
 
         //a Uri object to contain the path to the current file.
         //the Uri is used to give the MediaMetadataRetriever the path to the file i want to use it's data.
-        Uri path = Uri.parse(ANDROID_RESOURCE_PATH+resourceName);
+        Uri uri = Uri.parse(ANDROID_RESOURCE_PATH+resourceName);
+
+        this.uriString = uri.toString();
 
         try {
             //telling the MediaMetadataRetriever where to take the data from, using context & the Uri
             //Might throw IllegalArgumentException
-            mmr.setDataSource(context, path);}
-        catch(IllegalArgumentException ex){ex.printStackTrace();}
+            mmr.setDataSource(context, uri);}
+        catch(IllegalArgumentException ex){throw new RuntimeException();}
 
         //Setting the name of the Track & the Title of the Track
         fileName = resourceName;
@@ -164,6 +164,14 @@ public class Track implements Serializable {
     //Getters & setters
 
 
+    public String getTrackTitle() {
+        return trackTitle;
+    }
+
+    public void setTrackTitle(String trackTitle) {
+        this.trackTitle = trackTitle;
+    }
+
     public String getFileName() {
         return fileName;
     }
@@ -202,5 +210,13 @@ public class Track implements Serializable {
 
     public void setID(int ID) {
         this.ID = ID;
+    }
+
+    public String getUriString() {
+        return uriString;
+    }
+
+    public void setUriString(String uri) {
+        this.uriString = uri;
     }
 }

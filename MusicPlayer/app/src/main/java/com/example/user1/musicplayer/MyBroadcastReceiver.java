@@ -11,16 +11,24 @@ import android.widget.Toast;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
 
-    public boolean isMusicPlaying;//var to check if the music is now playing in the BackgroundMusicService
+    private MainActivity mainActivity;
+
+    boolean isPlaying;
+
+    public MyBroadcastReceiver(MainActivity mainActivity) {
+        super();
+        this.mainActivity = mainActivity;
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         //The action held within the intent that was sent here through broadcast
         String action = intent.getAction();
 
         switch(action){
-            case BackgroundMusicService.ACTION_CHECK_IF_PLAYING:
-                isMusicPlaying = intent.getBooleanExtra("isPlaying", isMusicPlaying);
-                Toast.makeText(context,"MBR, isMusicPlaying: "+isMusicPlaying, Toast.LENGTH_SHORT).show();
+            case BackgroundMusicService.ACTION_BROADCAST_IF_PLAYING_FOR_PLAYPAUSE:
+                isPlaying = intent.getBooleanExtra("isPlaying", isPlaying);
+                mainActivity.playPause(isPlaying);
                 break;
         }
 
