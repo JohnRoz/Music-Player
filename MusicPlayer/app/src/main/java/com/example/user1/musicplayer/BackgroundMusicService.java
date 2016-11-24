@@ -24,23 +24,24 @@ import java.util.ArrayList;
 
 public class BackgroundMusicService extends Service {
 
-    MediaPlayer mediaPlayer;
-    public static final String ACTION_INIT_SERVICE = "ACTION_INIT_SERVICE";
-    public static final String ACTION_PAUSE = "ACTION_PAUSE";
-    public static final String ACTION_RESUME = "ACTION_RESUME";
-    public static final String ACTION_PLAY_TRACK = "ACTION_PLAY_TRACK";
-    public static final String ACTION_SKIP_NEXT = "ACTION_SKIP_NEXT";
-    public static final String ACTION_SKIP_PREV = "ACTION_SKIP_PREV";
-    public static final String ACTION_BROADCAST_IF_PLAYING_FOR_PLAYPAUSE="ACTION_BROADCAST_IF_PLAYING_FOR_PLAYPAUSE";
-    public static final String ACTION_BROADCAST_IF_PLAYING_FOR_PAUSE = "ACTION_BROADCAST_IF_PLAYING_FOR_PAUSE";
-    public static final String ACTION_BROADCAST_IF_PLAYING_FOR_RESUME = "ACTION_BROADCAST_IF_PLAYING_FOR_RESUME";
+    private MediaPlayer mediaPlayer;
+
+    //Actions.
+    public static final String ACTION_INIT_SERVICE = "com.example.user1.musicplayer.action.INIT_SERVICE";
+    public static final String ACTION_PAUSE = "com.example.user1.musicplayer.action.PAUSE";
+    public static final String ACTION_RESUME = "com.example.user1.musicplayer.action.RESUME";
+    public static final String ACTION_PLAY_TRACK = "com.example.user1.musicplayer.action.PLAY_TRACK";
+    public static final String ACTION_SKIP_NEXT = "com.example.user1.musicplayer.action.SKIP_NEXT";
+    public static final String ACTION_SKIP_PREV = "com.example.user1.musicplayer.action.SKIP_PREV";
+    public static final String ACTION_BROADCAST_IF_PLAYING_FOR_PLAYPAUSE = "com.example.user1.musicplayer.action.BROADCAST_IF_PLAYING_FOR_PLAYPAUSE";
+    public static final String ACTION_PAUSE_WHEN_CALLING = "com.example.user1.musicplayer.action.PAUSE_WHEN_CALLING";
+    public static final String ACTION_RESUME_AFTER_CALL = "com.example.user1.musicplayer.action.RESUME_AFTER_CALL";
 
     private ArrayList<Track> tracks;
     private int currentTrackPosition;
 
     private final int MILLISECONDS_TO_REPEAT = 2000;
-    private final int NOTIFICATION_ID=1;
-
+    private final int NOTIFICATION_ID = 1;
 
 
     @Override
@@ -48,13 +49,12 @@ public class BackgroundMusicService extends Service {
         super.onCreate();
         //Creating the MediaPlayer for the service.
         mediaPlayer = new MediaPlayer();
-
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        currentTrackPosition = intent.getIntExtra("position", currentTrackPosition);
+        currentTrackPosition = intent.getIntExtra(MainActivity.position, currentTrackPosition);
         String action = intent.getAction();
 
         //Set the notification and start foreground.
@@ -67,7 +67,7 @@ public class BackgroundMusicService extends Service {
 
             //If the action is 'ACTION_PLAY_TRACK' - I told the app to play a track.
             case ACTION_PLAY_TRACK:
-                    playTrack();
+                playTrack();
                 break;
 
             //If the action is 'ACTION_PAUSE' - I told the app to pause the track.
@@ -92,7 +92,7 @@ public class BackgroundMusicService extends Service {
                 /*If the currentPosition of the music in the Track is less than MILLISECONDS_TO_REPEAT, skip back.
                 *If the currentPosition of the music in the Track is more (or equal to) MILLISECONDS_TO_REPEAT,
                 go back to the beginning of the Track.*/
-                if(mediaPlayer.getCurrentPosition()< MILLISECONDS_TO_REPEAT)
+                if (mediaPlayer.getCurrentPosition() < MILLISECONDS_TO_REPEAT)
                     currentTrackPosition--;
                 skip();
                 break;
@@ -103,13 +103,13 @@ public class BackgroundMusicService extends Service {
                 break;
 
             //Here I send a broadcast with the intent containing mediaPlayer.isPlaying().
-            case ACTION_BROADCAST_IF_PLAYING_FOR_PAUSE:
-                broadcastIsPlayingForAction(ACTION_BROADCAST_IF_PLAYING_FOR_PAUSE);
+            case ACTION_PAUSE_WHEN_CALLING:
+                broadcastIsPlayingForAction(ACTION_PAUSE_WHEN_CALLING);
                 break;
 
             //Here I send a broadcast with the intent containing mediaPlayer.isPlaying().
-            case ACTION_BROADCAST_IF_PLAYING_FOR_RESUME:
-                broadcastIsPlayingForAction(ACTION_BROADCAST_IF_PLAYING_FOR_RESUME);
+            case ACTION_RESUME_AFTER_CALL:
+                broadcastIsPlayingForAction(ACTION_RESUME_AFTER_CALL);
                 break;
         }
 
@@ -125,7 +125,7 @@ public class BackgroundMusicService extends Service {
         broadcastIsPlayingIntent.setAction(action);
 
         //Put mediaPlayer.isPlaying() inside the intent as an extra.
-        broadcastIsPlayingIntent.putExtra("isPlaying", mediaPlayer.isPlaying());
+        broadcastIsPlayingIntent.putExtra(MainActivity.isPlaying, mediaPlayer.isPlaying());
 
         //Send the broadcast.
         sendBroadcast(broadcastIsPlayingIntent);
@@ -134,7 +134,7 @@ public class BackgroundMusicService extends Service {
     private void initNotification() {
         String trackTitle = Track.UNKNOWN_INFO;
         String trackAlbum = Track.UNKNOWN_INFO;
-        if(tracks!=null && !tracks.isEmpty() && currentTrackPosition >= 0 && currentTrackPosition < tracks.size()) {
+        if (tracks != null && !tracks.isEmpty() && currentTrackPosition >= 0 && currentTrackPosition < tracks.size()) {
             trackTitle = tracks.get(currentTrackPosition).getTrackTitle();
             trackAlbum = tracks.get(currentTrackPosition).getAlbum();
         }
@@ -174,7 +174,7 @@ public class BackgroundMusicService extends Service {
     }
 
     private void playTrack() {
-        if (tracks!=null && !tracks.isEmpty() && currentTrackPosition >= 0 && currentTrackPosition < tracks.size()) {
+        if (tracks != null && !tracks.isEmpty() && currentTrackPosition >= 0 && currentTrackPosition < tracks.size()) {
             //If the music is playing right now - stop, in order to play another track.
             if (mediaPlayer.isPlaying())
                 mediaPlayer.stop();
@@ -187,25 +187,24 @@ public class BackgroundMusicService extends Service {
 
             //Setting the data source to the file in the Track that was pressed.
             //This may throw IllegalStateException if the MediaPlayer wasn't properly reset to the Idle state.
-            try{
-                mediaPlayer.setDataSource(getApplicationContext(),uri);
-                mediaPlayer.prepare();}
-
-            catch(IOException ex){ex.printStackTrace(); throw new RuntimeException();}
+            try {
+                mediaPlayer.setDataSource(getApplicationContext(), uri);
+                mediaPlayer.prepare();
+            } catch (IOException ex) {
+                throw new RuntimeException();
+            }
 
             //Starting the new Track.
             mediaPlayer.start();
 
             //When the current track ends playing - play the next Track if it exists. If it doesn't, do nothing.
-            whenTheTrackEndsPlayNext(tracks);
-        }
-        else
+            whenTheTrackEndsPlayNext();
+        } else
             stopSelf();
     }
 
-
     //This starts when a track ends.
-    private void whenTheTrackEndsPlayNext(final ArrayList<Track> tracks) {
+    private void whenTheTrackEndsPlayNext() {
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -216,43 +215,38 @@ public class BackgroundMusicService extends Service {
         });
     }
 
-    private void skip(){
+    private void skip() {
         //If the music is playing right now - stop.
-        if(mediaPlayer.isPlaying())
+        if (mediaPlayer.isPlaying())
             mediaPlayer.stop();
 
         //Checking: 'tracks' exists, & that 'currentTrackPosition' is in a legal range.
-        if (tracks!=null && !tracks.isEmpty() && currentTrackPosition >= 0 && currentTrackPosition < tracks.size()) {
+        if (tracks != null && !tracks.isEmpty() && currentTrackPosition >= 0 && currentTrackPosition < tracks.size()) {
 
             //Resetting the MediaPlayer to the Idle state so an IllegalStateException will not be thrown when I use setDataSource().
             mediaPlayer.reset();
 
             //Set the media player a new source which is the track in the tracks list, in the currentTrackPosition.
-            try{
+            try {
                 mediaPlayer.setDataSource(getApplicationContext(), Uri.parse(tracks.get(currentTrackPosition).getUriString()));
-                mediaPlayer.prepare();}
-
-            catch(IOException ex){throw new RuntimeException();}
+                mediaPlayer.prepare();
+            } catch (IOException ex) {
+                throw new RuntimeException();
+            }
 
             mediaPlayer.start();
 
             initNotification();
-        }
-
-        else if(tracks!=null && currentTrackPosition > tracks.size()) {
+        } else if (tracks != null && currentTrackPosition > tracks.size()) {
             currentTrackPosition--;
-        }
-
-        else if(tracks!=null && currentTrackPosition < 0)
+        } else if (tracks != null && currentTrackPosition < 0)
             currentTrackPosition++;
-
-
     }
 
     @Override
     public void onDestroy() {
         //When the service is destroyed, if the music is playing - stop it.
-        if(mediaPlayer.isPlaying()) {
+        if (mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
         }
 
@@ -261,8 +255,6 @@ public class BackgroundMusicService extends Service {
 
         super.onDestroy();
     }
-
-
 
     @Nullable
     @Override

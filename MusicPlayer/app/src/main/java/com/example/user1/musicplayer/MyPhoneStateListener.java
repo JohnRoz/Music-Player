@@ -20,7 +20,7 @@ public class MyPhoneStateListener extends PhoneStateListener {
     public void onCallStateChanged(int state, String incomingNumber) {
         super.onCallStateChanged(state, incomingNumber);
 
-        switch(state){
+        switch (state) {
             //When phone is ringing.
             case TelephonyManager.CALL_STATE_RINGING:
                 pauseForCalls();
@@ -41,12 +41,13 @@ public class MyPhoneStateListener extends PhoneStateListener {
 
     private void pauseForCalls() {
         final Intent checkIfPlayingIntent = new Intent(mainActivity, BackgroundMusicService.class);
-        checkIfPlayingIntent.setAction(BackgroundMusicService.ACTION_BROADCAST_IF_PLAYING_FOR_PAUSE);
+        checkIfPlayingIntent.setAction(BackgroundMusicService.ACTION_PAUSE_WHEN_CALLING);
         mainActivity.startService(checkIfPlayingIntent);
     }
+
     private void resumeAfterCalls() {
         final Intent checkIfPlayingIntent = new Intent(mainActivity, BackgroundMusicService.class);
-        checkIfPlayingIntent.setAction(BackgroundMusicService.ACTION_BROADCAST_IF_PLAYING_FOR_RESUME);
+        checkIfPlayingIntent.setAction(BackgroundMusicService.ACTION_RESUME_AFTER_CALL);
         mainActivity.startService(checkIfPlayingIntent);
     }
 

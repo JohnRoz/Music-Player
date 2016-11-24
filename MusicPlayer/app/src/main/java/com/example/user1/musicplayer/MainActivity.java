@@ -24,7 +24,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 //Importing static constants from BackgroundMusicService.
-import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_BROADCAST_IF_PLAYING_FOR_RESUME;
+import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_RESUME_AFTER_CALL;
 import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_INIT_SERVICE;
 import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_PLAY_TRACK;
 import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_PAUSE;
@@ -32,21 +32,27 @@ import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_RESUME
 import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_SKIP_NEXT;
 import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_SKIP_PREV;
 import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_BROADCAST_IF_PLAYING_FOR_PLAYPAUSE;
-import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_BROADCAST_IF_PLAYING_FOR_PAUSE;
-
+import static com.example.user1.musicplayer.BackgroundMusicService.ACTION_PAUSE_WHEN_CALLING;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.playPause) ImageButton playPause;
-    @BindView(R.id.stop) Button stop;
-    @BindView(R.id.skipNext)Button skipNext;
-    @BindView(R.id.skipPrev)Button skipPrev;
-    @BindView(R.id.listView)ListView listView;
+    @BindView(R.id.playPause)
+    ImageButton playPause;
+    @BindView(R.id.stop)
+    Button stop;
+    @BindView(R.id.skipNext)
+    Button skipNext;
+    @BindView(R.id.skipPrev)
+    Button skipPrev;
+    @BindView(R.id.listView)
+    ListView listView;
 
     private ArrayList<Track> tracks;
-
     private MyBroadcastReceiver receiver;
+
+    public static final String position = "position";
+    public static final String isPlaying = "isPlaying";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,16 +62,16 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);//ButterKnife is awesome!
 
-        //Setting the PhoneStateListener.
+        //Initiating the PhoneStateListener.
         initMyPhoneStateListener();
 
-        //Setting the BroadcastReceiver.
+        //Initiating the BroadcastReceiver.
         registerBroadcastReceiver();
 
-        //Setting 'tracks' as a new, empty ArrayList.
+        //Initiating 'tracks' as a new, empty ArrayList.
         tracks = new ArrayList<>();
 
-        //Setting rawResourcesNames as a list of the names of the resources in 'raw' folder (sinner function).
+        //Initiating rawResourcesNames as a list of the names of the resources in 'raw' folder (the sinner function).
         ArrayList<String> rawResourcesNames = getRawResourcesNames();
         for (String name : rawResourcesNames)
             tracks.add(new Track(name, this));
@@ -73,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<Track> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, tracks);
         listView.setAdapter(adapter);
 
-        //This is for Level 3 - an audio file outside of the app so the app offers itself to play it.
+        //This is for Level 4 - an audio file outside of the app so the app offers itself to play it.
         initIntentWithAudioFile(adapter);
 
         //Initiate the Service. give it the list of the Tracks.
@@ -95,10 +101,13 @@ public class MainActivity extends AppCompatActivity {
         initListViewItems();
     }
 
-    //This is for Level 3 - an audio file outside of the app so the app offers itself to play it.
+    /**
+     * This is for Level 4 - an audio file outside of the app so the app offers itself to play it.
+     *
+     * @param adapter An ArrayAdapter to set the adapter for the ListView
+     */
     private void initIntentWithAudioFile(ArrayAdapter<Track> adapter) {
-        if(getIntent().getData()!=null)
-        {
+        if (getIntent().getData() != null && getIntent().getAction().equals(Intent.ACTION_VIEW)) {
             Uri uri = getIntent().getData();
 
             //Add the selected file to the ArrayList as a new Track.
@@ -114,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
             Intent intent = new Intent(MainActivity.this, BackgroundMusicService.class);
             intent.setAction(ACTION_PLAY_TRACK);
-            intent.putExtra("position", tracks.size()-1);
+            intent.putExtra(position, tracks.size() - 1);
             startService(intent);
         }
     }
@@ -123,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
     private void initService() {
         //Initiate the Service. give it the list of the Tracks.
         Intent initServiceIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
-        initServiceIntent.putExtra("tracks",tracks);
+        initServiceIntent.putExtra("tracks", tracks);
         initServiceIntent.setAction(ACTION_INIT_SERVICE);
         startService(initServiceIntent);
     }
@@ -132,8 +141,8 @@ public class MainActivity extends AppCompatActivity {
         receiver = new MyBroadcastReceiver(this);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ACTION_BROADCAST_IF_PLAYING_FOR_PLAYPAUSE);
-        intentFilter.addAction(ACTION_BROADCAST_IF_PLAYING_FOR_PAUSE);
-        intentFilter.addAction(ACTION_BROADCAST_IF_PLAYING_FOR_RESUME);
+        intentFilter.addAction(ACTION_PAUSE_WHEN_CALLING);
+        intentFilter.addAction(ACTION_RESUME_AFTER_CALL);
         registerReceiver(receiver, intentFilter);
     }
 
@@ -141,8 +150,6 @@ public class MainActivity extends AppCompatActivity {
         TelephonyManager tManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         tManager.listen(new MyPhoneStateListener(this), PhoneStateListener.LISTEN_CALL_STATE);
     }
-
-
 
     private void initListViewItems() {
         //When an item from the ListView is pressed:
@@ -154,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 playPause.setImageResource(R.drawable.ic_pause_black_24dp);
 
                 Intent playTrackIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
-                playTrackIntent.putExtra("position",position);
+                playTrackIntent.putExtra(MainActivity.position, position);
                 playTrackIntent.setAction(ACTION_PLAY_TRACK);
 
                 //Starting the service with 'playTrackIntent' in order to tell the service to play the Tracks in the current position.
@@ -169,16 +176,7 @@ public class MainActivity extends AppCompatActivity {
         skipPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (tracks != null && !tracks.isEmpty()) {
-
-                    //Changing the playPause button from 'Play Mode' to 'Pause Mode'.
-                    playPause.setImageResource(R.drawable.ic_pause_black_24dp);
-
-                    final Intent skipPrevIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
-                    skipPrevIntent.setAction(ACTION_SKIP_PREV);
-
-                    startService(skipPrevIntent);
-                }
+                skipByAction(ACTION_SKIP_PREV);
             }
         });
     }
@@ -188,18 +186,21 @@ public class MainActivity extends AppCompatActivity {
         skipNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (tracks != null && !tracks.isEmpty()) {
-
-                    //Changing the playPause button from 'Play Mode' to 'Pause Mode'.
-                    playPause.setImageResource(R.drawable.ic_pause_black_24dp);
-
-                    final Intent skipNextIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
-                    skipNextIntent.setAction(ACTION_SKIP_NEXT);
-
-                    startService(skipNextIntent);
-                }
+                skipByAction(ACTION_SKIP_NEXT);
             }
         });
+    }
+
+    private void skipByAction(String action) {
+        if (tracks != null && !tracks.isEmpty()) {
+            //Changing the playPause button from 'Play Mode' to 'Pause Mode'.
+            playPause.setImageResource(R.drawable.ic_pause_black_24dp);
+
+            final Intent skipNextIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
+            skipNextIntent.setAction(action);
+
+            startService(skipNextIntent);
+        }
     }
 
     private void initStopButton() {
@@ -232,29 +233,31 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //This function is used in the onReceive() func in MyBroadcastReceiver.
+    /**
+     * This function is used in the onReceive() func in MyBroadcastReceiver.
+     * If isPlaying is true, this function will pause the music.
+     * If isPlaying is false, this function will resume the music.
+     *
+     * @param isPlaying is true if the MediaPlayer is playing, false otherwise.
+     */
     public void playPause(boolean isPlaying) {
-        final Intent playPauseIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
-
         //Pause
-        if(isPlaying){
-            playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-            playPauseIntent.setAction(ACTION_PAUSE);
-        }
+        pause(isPlaying);
 
         //Resume
-        else{
-            playPause.setImageResource(R.drawable.ic_pause_black_24dp);
-            playPauseIntent.setAction(ACTION_RESUME);
-        }
+        resume(!isPlaying);
 
-        startService(playPauseIntent);
     }
 
-    //This function is used in the onReceive() func in MyBroadcastReceiver.
-    public void pause(boolean isPlaying){
+    /**
+     * This function is used in the onReceive() func in MyBroadcastReceiver.
+     * If isPlaying is true, this function will pause the music.
+     *
+     * @param isPlaying is true if the MediaPlayer is playing, false otherwise.
+     */
+    public void pause(boolean isPlaying) {
         //Pause
-        if(isPlaying){
+        if (isPlaying) {
             final Intent pauseIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
             playPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
             pauseIntent.setAction(ACTION_PAUSE);
@@ -263,10 +266,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //This function is used in the onReceive() func in MyBroadcastReceiver.
+    /**
+     * This function is used in the onReceive() func in MyBroadcastReceiver.
+     * If isPlaying is false, this function will resume the music.
+     *
+     * @param isPlaying is true if the MediaPlayer is playing, false otherwise.
+     */
     public void resume(boolean isPlaying) {
         //Resume
-        if(!isPlaying){
+        if (!isPlaying) {
             final Intent resumeIntent = new Intent(MainActivity.this, BackgroundMusicService.class);
             playPause.setImageResource(R.drawable.ic_pause_black_24dp);
             resumeIntent.setAction(ACTION_RESUME);
@@ -274,7 +282,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //The sinner function (but it's a necessary sin).
+
+    /**
+     * The sinner function (but it's a necessary sin).
+     *
+     * @return The ArrayList of the names of the resources in R.raw .
+     */
     private ArrayList<String> getRawResourcesNames() {
 
         //an ArrayList to contain the names of the resources of raw.
