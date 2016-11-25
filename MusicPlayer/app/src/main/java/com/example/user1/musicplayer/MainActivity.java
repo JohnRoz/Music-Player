@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -103,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * This is for Level 4 - an audio file outside of the app so the app offers itself to play it.
-     *
      * @param adapter An ArrayAdapter to set the adapter for the ListView
      */
     private void initIntentWithAudioFile(ArrayAdapter<Track> adapter) {
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
         pause(isPlaying);
 
         //Resume
-        resume(!isPlaying);
+        resume(isPlaying);
 
     }
 

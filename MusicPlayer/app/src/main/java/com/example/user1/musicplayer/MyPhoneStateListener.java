@@ -11,6 +11,7 @@ import android.telephony.TelephonyManager;
 public class MyPhoneStateListener extends PhoneStateListener {
 
     private MainActivity mainActivity;
+    private Boolean gotACall = false;
 
     public MyPhoneStateListener(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -23,6 +24,7 @@ public class MyPhoneStateListener extends PhoneStateListener {
         switch (state) {
             //When phone is ringing.
             case TelephonyManager.CALL_STATE_RINGING:
+                gotACall = true;
                 pauseForCalls();
                 break;
 
@@ -33,7 +35,8 @@ public class MyPhoneStateListener extends PhoneStateListener {
 
             //When the call is ended / rejected / no one is calling me.
             case TelephonyManager.CALL_STATE_IDLE:
-                resumeAfterCalls();
+                if(gotACall)
+                    resumeAfterCalls();
                 break;
         }
 
